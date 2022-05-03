@@ -1,0 +1,23 @@
+#------START : build-env
+#Base Image
+FROM mrc.microsoft.com/dotnet/sdk:5.0 as build-env
+#Working Directory
+WORKDIR /app
+#Copy csproj file to root file
+COPY *.csproj ./
+# Download all dotnet related package inside the csproj
+RUN dotnet restore
+
+#Copy rest of the files from code to new docker image
+COPY . ./
+#Publishing the application instance inside the build-env
+RUN dotnet publish -c Release -o out
+#------END
+
+FROM mcr.microsoft.com/dotnet/sdk:5.0
+WORKDIR /app
+EXPOSE 80
+COPY --from=build-env /app/out .
+ENTRYPOINT [ "dotnet","SampleApi.dll" ]
+
+
